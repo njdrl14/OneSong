@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lyrics Search</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+
+    <!-- Bootswatch Styling for Improving the Aesthetics -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.6/flatly/bootstrap.min.css">
+
+   
+
+    <!-- Custom Fonts -->
+    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- Custom CSS -->
+    <link href="css/landing-page.css" rel="stylesheet">
+    <link href="css/list.css" rel="stylesheet">
+    <link href="https://glyphsearch.com/">
+    <link rel="stylesheet" type="text/css" href="slick/slick.css"/>
+    <link rel="stylesheet" type="text/css" href="slick/slick-theme.css"/>
+
+
+    <!-- Style to fix the issue of text extending past panel length -->
+    <style>
+        .panel-body a 
+        {
+            word-break:break-all;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Main Bootstrap Search -->
+<div class="container">
+
+    <!-- Jumbotron for Title -->
+    <div class="jumbotron" style="background-color: #20315A ; color: white;">
+        <h1 class="text-center"><strong><i class="fa fa-music"></i> Lyrics Search</strong></h1>
+    </div>
+
+    <!-- Row for Searching New York Times -->
+    <div class="row">
+        <div class="col-sm-12">
+        <br>
+            <!-- First panel is for handling the search parameters -->
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><strong><i class="fa fa-list-alt"></i> Search Parameters</strong></h3>
+                </div>
+                <div class="panel-body">
+                    
+                    <!-- Here we create an HTML Form for handling the inputs-->
+                    <form role="form" id="myform">
+
+                      <!-- Here we create the text box for capturing the search term-->
+                      <div class="form-group">
+                        <input type="text" class="form-control" id="lyricssearch" placeholder="Type Artist name..." style="padding-left:5px;">
+                      </div>
+
+                      <!-- Here we have our final submit button -->
+                      <button type="button" href="#" class="btn btn-default" id="lyricssubmit"><i class="fa fa-search"></i> Search</button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- This row will handle all of the retrieved articles -->
+    <div class="row" id="rowAlbums">
+        <div class="col-sm-12">
+        <br>
+
+            <!-- This panel will initially be made up of a panel and wells for each of the articles retrieved -->
+            <div class="panel panel-primary">
+
+                <!-- Panel Heading for the retrieved articles box -->
+                <div class="panel-heading">
+                    <h3 class="panel-title"><strong><i class="fa fa-object-group"></i>   Your Albums</strong></h3>
+                </div>
+
+                <!-- This main panel will hold each of the resulting articles -->
+                <div class="panel-body">
+                    <div id='albumsResultsBox'>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row" id="rowSongs">
+        <div class="col-sm-12">
+            <br>
+            <!-- This panel will initially be made up of a panel and wells for each of the articles retrieved -->
+            <div class="panel panel-primary">
+
+                <!-- Panel Heading for the retrieved articles box -->
+                <div class="panel-heading">
+                    <h3 class="panel-title"><strong><i class="fa fa-object-group"></i>  Your Songs</strong></h3>
+                </div>
+
+                <!-- This main panel will hold each of the resulting articles -->
+                <div class="panel-body">
+                    <input class='search' placeholder='Search' />
+                    <button class='sort' data-sort='name'>Sort by name</button>
+                    <div id="songsResultsBox">
+                        
+                    </div>
+                </div>
+            </div>            
+        </div>
+    </div>
+    
+    <div class="row" id="rowLyrics">
+        <div class="col-sm-12">
+            <br>
+            <!-- This panel will initially be made up of a panel and wells for each of the articles retrieved -->
+            <div class="panel panel-primary">
+
+                <!-- Panel Heading for the retrieved articles box -->
+                <div class="panel-heading">
+                    <h3 class="panel-title"><strong><i class="fa fa-object-group"></i>  Your Lyrics</strong></h3>
+                </div>
+
+                <!-- This main panel will hold each of the resulting articles -->
+                <div class="panel-body">
+                    <div id="lyricsResultsBox">
+                        
+                    </div>
+                </div>
+            </div>            
+        </div>
+    </div>
+
+    
+
+ <!-- jQuery -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+
+    <!-- External Table Beautifier js library -->
+    <script type="text/javascript" src="js/list.js"></script>
+
+    <!-- External Carousel js library -->
+    <script type="text/javascript" src="slick/slick.min.js"></script>
+
+    
+
+
+    <script type="text/javascript">
+        $("#rowSongs").hide();
+        $("#rowLyrics").hide();
+        var artistID = "";
+        var artistName = "";
+        //Make album id a array of strings
+        var albumID = [];
+        //make album name also a array of strings  - as album id and album names are multiple for each artist - 1:n relationship
+        var albumName = [];
+        //Similarly do for your track ids - or same thing will happen
+        var trackID = [];
+        var trackName = [];
+        var authKey = "3b7687f270a74d30706bd956abcda424";
+
+        function artistSearch(searchArtist) {
+            
+
+             // This variable will be pre-programmed with our authentication key (the one we received when we registered)
+            
+            // Based on the queryTerm we will create a queryURL 
+            var artistIDQueryURL = "https://api.musixmatch.com/ws/1.1/artist.search?format=jsonp&apikey=" + authKey + "&q_artist=" + searchArtist;
+            $('#lyricssearch').html("");
+            $.ajax({
+                url: artistIDQueryURL,
+                method: 'POST',
+                dataType: 'JSONP'
+            }).done(function (artistResponse) {
+                artistID = artistResponse.message.body.artist_list[0].artist.artist_id;
+                artistName = artistResponse.message.body.artist_list[0].artist.artist_name;
+                var albumIDQueryURL = "https://api.musixmatch.com/ws/1.1/artist.albums.get?format=jsonp&apikey=" + authKey + "&artist_id=" + artistID + "&s_release_date=desc&g_album_name=1";
+                $.ajax({
+                    url: albumIDQueryURL,
+                    method: 'GET',
+                    dataType: 'JSONP'
+                }).done(function (albumResponse) {
+                    for (var i = 0; i < albumResponse.message.body.album_list.length; i++) {
+                        //put album id and names in corresponding positions in their respective arrays, you can also use hashmap of ids and names for fast retrieval which is a better appraoch. But for sake of simplicity we are using arrays.
+                        albumID[i] = albumResponse.message.body.album_list[i].album.album_id;
+                        albumName[i] = albumResponse.message.body.album_list[i].album.album_name;
+                        var imageUrl = albumResponse.message.body.album_list[i].album.album_coverart_350x350;
+                         //send album id to newAlbum var onclick method in order to set correct click listener
+                        var newAlbum = "<div class='albums' href='#' onclick='showSongs("+albumID[i]+");'>" + albumName[i] + "<br><img alt='No Album Cover' style='height:80px' src='" + imageUrl + "'/></div>";
+                        
+                        $("#albumsResultsBox").append(newAlbum);
+
+
+                    }    
+                        try{
+
+                            $("#albumsResultsBox").slick("unslick");
+
+                        }catch(e){
+
+                        }
+
+                        $("#albumsResultsBox").slick({
+                            dots: true,
+                            arrows: true,
+                            infinite: false,
+                            speed: 300,
+                            slidesToShow: 3,
+                            slidesToScroll: 3,
+                            responsive: [
+                                {
+                                  breakpoint: 1024,
+                                  settings: {
+                                    slidesToShow: 3,
+                                    slidesToScroll: 3,
+                                    infinite: true,
+                                    dots: true
+                                  }
+                                },
+                                {
+                                  breakpoint: 600,
+                                  settings: {
+                                    slidesToShow: 2,
+                                    slidesToScroll: 2
+                                  }
+                                },
+                                {
+                                  breakpoint: 480,
+                                  settings: {
+                                    slidesToShow: 1,
+                                    slidesToScroll: 1
+                                  }
+                                }
+                            ]
+                        });  
+
+                });
+
+            });
+
+        }
+        //get album id here to show correct songs in an album in a var called albumId
+        function showSongs(albumId){
+            $("#rowSongs").show();
+            $("#songsResultsBox").empty();
+            var trackIDQueryURL = "https://api.musixmatch.com/ws/1.1/album.tracks.get?format=jsonp&apikey=" + authKey + "&album_id=" + albumId; // i changed albumID(array) to albumId(parameter of function)
+            $.ajax({
+                url: trackIDQueryURL,
+                method: 'GET',
+                dataType: 'JSONP'
+            }).done(function (trackResponse) {
+                
+                
+                for (var j = 0; j < trackResponse.message.body.track_list.length; j++) {
+                    trackID[j] = trackResponse.message.body.track_list[j].track.track_id;
+                    trackName[j] = trackResponse.message.body.track_list[j].track.track_name;
+
+                    var newTrack = "<div class='songs' id='users' href='#' onclick='showLyrics("+trackID[j]+");'><ul class='list'><li><h3 class='name'>" + trackName[j] + "</h3></li></ul></div>";
+                    newTrack+="";
+                    $("#songsResultsBox").append(newTrack);
+                }
+            });
+        }
+
+        function showLyrics(trackID){
+            
+            $("#rowLyrics").show();
+            $("#lyricsResultsBox").empty();
+            var lyricsIDQueryURL = "https://api.musixmatch.com/ws/1.1/track.lyrics.get?format=jsonp&apikey=" + authKey + "&track_id=" + trackID;
+
+                               
+            $.ajax({
+                url: lyricsIDQueryURL,
+                method: 'GET',
+                dataType: 'JSONP'
+            }).done(function (lyricsResponse) {
+                console.log(lyricsResponse);       
+                
+                console.log(lyricsResponse.message.header.status_code);
+                if(lyricsResponse.message.header.status_code === 404){
+                    $("#lyricsResultsBox").html("<p>Sorry but MusixMatch does not have lyrics to this track!</p>")
+                }else{                    
+                    var lyrics = lyricsResponse.message.body.lyrics.lyrics_body;
+                    var newLyrics = "<div class='lyrics'>" + lyrics + "</div>";                   
+                    $("#lyricsResultsBox").append(newLyrics);
+
+                }
+                
+                
+            });
+            
+        }
+
+        $('#lyricssubmit').on('click', function () {
+            $("#albumsResultsBox").empty();
+            //grabs artists name
+            var artistkey = $('#lyricssearch').val().trim();
+            
+            //call artist search function here?
+            artistSearch(artistkey);
+            return false;
+           
+        });
+
+    </script>
+
+
+</body>
+</html>
